@@ -51,7 +51,15 @@ export async function getTrending(req: Request, res: Response) {
     ];
 
     // Generate dynamic top posts from trending topics
-    const topPosts = [];
+    const topPosts: Array<{
+      id: string;
+      title: string;
+      subreddit: string;
+      upvotes: number;
+      comments: number;
+      url: string;
+      sentiment: string;
+    }> = [];
     for (let i = 0; i < Math.min(3, trends.length); i++) {
       const trend = trends[i];
       try {
