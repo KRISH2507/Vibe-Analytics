@@ -39,7 +39,8 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   return (

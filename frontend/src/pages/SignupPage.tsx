@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -43,7 +44,8 @@ export default function SignupPage() {
 
   const handleGoogleSignup = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   // Password strength indicator
