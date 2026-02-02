@@ -1,20 +1,9 @@
-import nodemailer from "nodemailer";
+import { Resend } from 'resend';
 
-const isEmailConfigured =
-  process.env.SMTP_USER &&
-  process.env.SMTP_PASS &&
-  !process.env.SMTP_USER.includes('your-email') &&
-  !process.env.SMTP_PASS.includes('your-app-password');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false, 
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const isEmailConfigured = process.env.RESEND_API_KEY && 
+  !process.env.RESEND_API_KEY.includes('your-resend-api-key');
 
 export async function sendOTPEmail(email: string, otp: string) {
   console.log(`\n${"=".repeat(60)}`);
@@ -22,6 +11,7 @@ export async function sendOTPEmail(email: string, otp: string) {
   console.log(`${"=".repeat(60)}\n`);
 
   if (!isEmailConfigured) {
+    console.log('⚠️  Resend API key not configured - OTP displayed in console only');
     return {
       success: false,
       error: "Email not configured - check console for OTP"
@@ -29,10 +19,10 @@ export async function sendOTPEmail(email: string, otp: string) {
   }
 
   try {
-    const info = await transporter.sendMail({
-      from: process.env.FROM_EMAIL || '"Insight Weaver" <noreply@insightweaver.com>',
-      to: email,
-      subject: "Your Insight Weaver Verification Code",
+    const { data, error } = await resend.emails.send({
+      from: process.env.FROM_EMAIL || 'Vibe Analytics <onboarding@resend.dev>',
+      to: [email],
+      subject: "Your Vibe Analytics Verification Code",
       html: `
         <!DOCTYPE html>
         <html>
@@ -54,7 +44,7 @@ export async function sendOTPEmail(email: string, otp: string) {
             </div>
             <div class="content">
               <p>Hello,</p>
-              <p>Thank you for signing up with Insight Weaver! To complete your registration, please use the verification code below:</p>
+              <p>Thank you for signing up with Vibe Analytics! To complete your registration, please use the verification code below:</p>
               
               <div class="otp-box">
                 <div class="otp-code">${otp}</div>
@@ -64,18 +54,23 @@ export async function sendOTPEmail(email: string, otp: string) {
               <p>If you didn't request this code, please ignore this email.</p>
               
               <div class="footer">
-                <p>© 2026 Insight Weaver. All rights reserved.</p>
+                <p>© 2026 Vibe Analytics. All rights reserved.</p>
               </div>
             </div>
           </div>
         </body>
         </html>
       `,
-      text: `Your Insight Weaver verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.`,
+      text: `Your Vibe Analytics verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.`,
     });
 
-    console.log("Email sent successfully:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    if (error) {
+      console.error("Resend API error:", error);
+      return { success: false, error };
+    }
+
+    console.log("✅ Email sent successfully:", data?.id);
+    return { success: true, messageId: data?.id };
   } catch (error) {
     console.error("Error sending email:", error);
     return { success: false, error };
