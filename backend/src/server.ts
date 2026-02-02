@@ -24,8 +24,21 @@ const PORT = process.env.PORT || 5000;
 import { NextFunction } from "express";
 
 /* -------------------- MIDDLEWARE -------------------- */
+// Support both local development and production URLs
+const allowedOrigins = [
+  'http://localhost:8081',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL || 'https://vibe-analytics-theta.vercel.app'
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:8081',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
