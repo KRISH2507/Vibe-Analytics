@@ -25,7 +25,12 @@ export default function SignupPage() {
     setIsLoading(true);
     setError('');
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const result = await generateOTP(email, name);
+      clearTimeout(timeoutId);
+      
       if (result.success) {
         localStorage.setItem('signupEmail', email);
         localStorage.setItem('signupName', name);
@@ -36,7 +41,11 @@ export default function SignupPage() {
       }
     } catch (error) {
       console.error('Error sending OTP:', error);
-      setError('Error sending OTP. Please check your email and try again.');
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timed out. Backend may be slow. Please try again.');
+      } else {
+        setError('Error sending OTP. Please check your email and try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -245,7 +254,14 @@ export default function SignupPage() {
               className="w-full h-12 rounded-xl text-base"
               disabled={isLoading || !acceptTerms}
             >
-              {isLoading ? 'Creating account...' : 'Create Account'}
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  Creating account...
+                </div>
+              ) : (
+                'Create Account'
+              )}
             </Button>
           </form>
 

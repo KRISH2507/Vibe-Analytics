@@ -21,7 +21,12 @@ export default function LoginPage() {
     setError('');
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const result = await generateLoginOTP(email);
+      clearTimeout(timeoutId);
+      
       if (result.success) {
         // Store email for OTP verification page
         localStorage.setItem('loginEmail', email);
@@ -31,7 +36,11 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error('Error:', error);
-      setError('Error sending OTP. Please check your email and try again.');
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timed out. Backend may be slow. Please try again.');
+      } else {
+        setError('Error sending OTP. Please check your email and try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -96,11 +105,19 @@ export default function LoginPage() {
                 className="w-full h-12 rounded-xl text-base"
                 disabled={isLoading}
               >
-                {isLoading ? 'Sending OTP...' : 'Continue with Email'}
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                    Sending OTP...
+                  </div>
+                ) : (
+                  'Continue with Email'
+                )}
               </Button>
 
               <p className="text-xs text-center text-muted-foreground">
                 We'll send a 6-digit code to your email
+                {isLoading && ' (this may take 30-60 seconds)'}
               </p>
             </div>
           </form>
