@@ -1,9 +1,19 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create transporter using Gmail SMTP
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-const isEmailConfigured = process.env.RESEND_API_KEY && 
-  !process.env.RESEND_API_KEY.includes('your-resend-api-key');
+const isEmailConfigured = process.env.SMTP_USER && 
+  process.env.SMTP_PASS && 
+  process.env.SMTP_HOST;
 
 export async function sendOTPEmail(email: string, otp: string) {
   console.log(`\n${"=".repeat(60)}`);
@@ -11,7 +21,7 @@ export async function sendOTPEmail(email: string, otp: string) {
   console.log(`${"=".repeat(60)}\n`);
 
   if (!isEmailConfigured) {
-    console.log('⚠️  Resend API key not configured - OTP displayed in console only');
+    console.log('⚠️  SMTP not configured - OTP displayed in console only');
     return {
       success: false,
       error: "Email not configured - check console for OTP"
@@ -19,9 +29,9 @@ export async function sendOTPEmail(email: string, otp: string) {
   }
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'Vibe Analytics <onboarding@resend.dev>',
-      to: [email],
+    const info = await transporter.sendMail({
+      from: process.env.FROM_EMAIL || 'Vibe Analytics <noreply@vibeanalytics.com>',
+      to: email,
       subject: "Your Vibe Analytics Verification Code",
       html: `
         <!DOCTYPE html>
@@ -64,13 +74,8 @@ export async function sendOTPEmail(email: string, otp: string) {
       text: `Your Vibe Analytics verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.`,
     });
 
-    if (error) {
-      console.error("Resend API error:", error);
-      return { success: false, error };
-    }
-
-    console.log("✅ Email sent successfully:", data?.id);
-    return { success: true, messageId: data?.id };
+    console.log("✅ Email sent successfully:", info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Error sending email:", error);
     return { success: false, error };
