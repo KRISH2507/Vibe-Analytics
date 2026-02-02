@@ -12,6 +12,7 @@
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
+    "groq-sdk": "^0.37.0",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^7.0.13",
     "passport": "^0.7.0",

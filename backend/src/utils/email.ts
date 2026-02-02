@@ -1,18 +1,18 @@
 import nodemailer from "nodemailer";
 
 const isEmailConfigured =
-  process.env.EMAIL_USER &&
-  process.env.EMAIL_PASSWORD &&
-  !process.env.EMAIL_USER.includes('your-email') &&
-  !process.env.EMAIL_PASSWORD.includes('your-app-password');
+  process.env.SMTP_USER &&
+  process.env.SMTP_PASS &&
+  !process.env.SMTP_USER.includes('your-email') &&
+  !process.env.SMTP_PASS.includes('your-app-password');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.EMAIL_PORT || "587"),
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: parseInt(process.env.SMTP_PORT || "587"),
   secure: false, 
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
@@ -30,7 +30,7 @@ export async function sendOTPEmail(email: string, otp: string) {
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || '"Insight Weaver" <noreply@insightweaver.com>',
+      from: process.env.FROM_EMAIL || '"Insight Weaver" <noreply@insightweaver.com>',
       to: email,
       subject: "Your Insight Weaver Verification Code",
       html: `
