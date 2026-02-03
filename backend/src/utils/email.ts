@@ -1,16 +1,12 @@
-import emailjs from '@emailjs/nodejs';
+import emailjs from 'emailjs-com';
 
 // Initialize EmailJS
 const isEmailConfigured = process.env.EMAILJS_SERVICE_ID && 
   process.env.EMAILJS_TEMPLATE_ID && 
-  process.env.EMAILJS_PUBLIC_KEY &&
-  process.env.EMAILJS_PRIVATE_KEY;
+  process.env.EMAILJS_PUBLIC_KEY;
 
 if (isEmailConfigured) {
-  emailjs.init({
-    publicKey: process.env.EMAILJS_PUBLIC_KEY,
-    privateKey: process.env.EMAILJS_PRIVATE_KEY,
-  });
+  emailjs.init(process.env.EMAILJS_PUBLIC_KEY);
 }
 
 export async function sendOTPEmail(email: string, otp: string) {
