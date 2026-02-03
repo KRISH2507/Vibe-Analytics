@@ -1,4 +1,23 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+import emailjs from "@emailjs/browser";
+
+const API_BASE =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+// 📧 Send OTP using ONE template (MATCHES EmailJS TEMPLATE)
+async function sendOTPEmail(email: string, otp: string) {
+  return emailjs.send(
+    import.meta.env.VITE_EMAILJS_SERVICE_ID,
+    import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+    {
+      email: email,            // matches {{email}}
+      passcode: String(otp),   // matches {{passcode}}
+      time: "15 minutes",      // matches {{time}}
+    },
+    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+  );
+}
+
+// ================= AUTH =================
 
 export async function generateOTP(email: string, name?: string) {
   const res = await fetch(`${API_BASE}/auth/signup-otp`, {
@@ -6,7 +25,14 @@ export async function generateOTP(email: string, name?: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, name }),
   });
-  return res.json();
+
+  const data = await res.json();
+  if (!data.success) return data;
+
+  // 📧 Send OTP (signup)
+  await sendOTPEmail(email, data.otp);
+
+  return data;
 }
 
 export async function generateLoginOTP(email: string) {
@@ -15,7 +41,14 @@ export async function generateLoginOTP(email: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
   });
-  return res.json();
+
+  const data = await res.json();
+  if (!data.success) return data;
+
+  // 📧 Send OTP (login)
+  await sendOTPEmail(email, data.otp);
+
+  return data;
 }
 
 export async function verifyOTP(email: string, otp: string) {
@@ -24,6 +57,7 @@ export async function verifyOTP(email: string, otp: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, otp }),
   });
+
   return res.json();
 }
 
@@ -41,12 +75,12 @@ export async function fetchMe() {
   const res = await fetch(`${API_BASE}/auth/me`, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     },
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch user: ${res.status} ${res.statusText}`);
+    throw new Error(`Failed to fetch user: ${res.status}`);
   }
 
   return res.json();
