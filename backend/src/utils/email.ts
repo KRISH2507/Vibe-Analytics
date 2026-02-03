@@ -6,7 +6,7 @@ const isEmailConfigured = process.env.EMAILJS_SERVICE_ID &&
   process.env.EMAILJS_PUBLIC_KEY;
 
 if (isEmailConfigured) {
-  emailjs.init(process.env.EMAILJS_PUBLIC_KEY);
+  emailjs.init(process.env.EMAILJS_PUBLIC_KEY!);
 }
 
 export async function sendOTPEmail(email: string, otp: string) {
