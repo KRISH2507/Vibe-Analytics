@@ -45,14 +45,14 @@ export async function generateSignupOtp(
       return res.json({
         success: true,
         message: "OTP sent to email",
+        otp: code,
       });
     } else {
       // Email failed but OTP is still in database
       return res.json({
         success: true,
         message: "OTP generated (email delivery may have failed - check console)",
-        // Keep for testing when email is not configured
-        testCode: code,
+        otp: code,
       });
     }
   } catch (error) {
@@ -112,14 +112,14 @@ export async function generateLoginOtp(
       return res.json({
         success: true,
         message: "OTP sent to email",
+        otp: code,
       });
     } else {
       // Email failed but OTP is still in database
       return res.json({
         success: true,
         message: "OTP generated (email delivery may have failed - check console)",
-        // Keep for testing when email is not configured
-        testCode: code,
+        otp: code,
       });
     }
   } catch (error) {
