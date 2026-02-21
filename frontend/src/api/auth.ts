@@ -10,8 +10,9 @@ async function sendOTPEmail(email: string, otp: string) {
     import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
     {
       email: email,            // matches {{email}}
-      passcode: String(otp),   // matches {{passcode}}
-      time: "15 minutes",      // matches {{time}}
+      otp: String(otp),        // matches {{otp}}
+      passcode: String(otp),   // backward compatibility for older templates
+      time: "15 minutes",     // matches {{time}}
     },
     import.meta.env.VITE_EMAILJS_PUBLIC_KEY
   );
