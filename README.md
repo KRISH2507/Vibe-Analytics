@@ -1,4 +1,4 @@
-# Insight Weaver
+# Vibe-Analytics
 
 A full-stack application with separate frontend and backend.
 
